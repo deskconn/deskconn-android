@@ -1,4 +1,4 @@
-package com.om26er.brightnesscontrol;
+package io.deskconn.deskconn;
 
 import android.content.Context;
 import android.content.Intent;

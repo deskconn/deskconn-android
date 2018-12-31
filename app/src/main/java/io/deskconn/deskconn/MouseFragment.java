@@ -1,4 +1,4 @@
-package com.om26er.brightnesscontrol;
+package io.deskconn.deskconn;
 
 import android.graphics.Point;
 import android.os.Bundle;
