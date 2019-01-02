@@ -32,7 +32,7 @@ public class BrightnessFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         mBaseView = inflater.inflate(R.layout.fragment_brightness, container, false);
-        getActivity().setTitle("Brightness");
+        getActivity().setTitle("Brightness Control");
         mSeekBar = mBaseView.findViewById(R.id.brightness_seekbar);
         mStatusText = mBaseView.findViewById(R.id.status_text);
         mSeekBar.setOnSeekBarChangeListener(mSeekBarChangeListener);

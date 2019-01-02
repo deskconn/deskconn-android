@@ -14,32 +14,23 @@ import android.view.ViewGroup;
 import io.crossbar.autobahn.wamp.Session;
 
 public class MouseFragment extends Fragment {
+
     private View mBaseView;
 
-    private View touchBoard;
-    private long mDownTime;
     private float mDownX;
     private float mDownY;
 
-    private long mUpTime;
-    private float mUpX;
-    private float mUpY;
-
-    private float mLastMoveX = Float.MAX_VALUE;
-    private float mLastMoveY = Float.MAX_VALUE;
-
-    private float mCurMoveX;
-    private float mCurMoveY;
-    private long mLastMoveTime;
-
     private Session mWAMPSession;
+    private Point mDisplaySize;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         mBaseView = inflater.inflate(R.layout.fragment_mouse, container, false);
-        getActivity().setTitle("Mouse");
+        getActivity().setTitle("Mouse Control");
+        mDisplaySize = new Point();
+        getActivity().getWindowManager().getDefaultDisplay().getSize(mDisplaySize);
         CrossbarConnector connector = CrossbarConnector.getInstance();
         if (connector.isConnected()) {
             mWAMPSession = connector.getSession();
@@ -51,65 +42,40 @@ public class MouseFragment extends Fragment {
 
     @SuppressLint("ClickableViewAccessibility")
     private void init() {
-        touchBoard = mBaseView.findViewById(R.id.touch_board);
-        touchBoard.setOnTouchListener((v, event) -> {
-            onScreenTouch(event);
-            return true;
-        });
+        View touchBoard = mBaseView.findViewById(R.id.touch_board);
+        touchBoard.setOnTouchListener((v, event) -> onScreenTouch(event));
     }
 
-    private void onScreenTouch(MotionEvent event) {
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN:
-                System.out.println("down");
-                onSingClick(event, true);
-                break;
-            case MotionEvent.ACTION_UP:
-                System.out.println("up");
-                onSingClick(event, false);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                System.out.println("Move");
-                onMove(event);
-                break;
+    private boolean onScreenTouch(MotionEvent event) {
+        int ev = event.getAction();
+        if (ev == MotionEvent.ACTION_DOWN) {
+            onSingClick(event, true);
+        } else if (ev == MotionEvent.ACTION_UP) {
+            onSingClick(event, false);
+        } else if (ev == MotionEvent.ACTION_MOVE) {
+            onMove(event);
         }
+        return true;
     }
 
     private void onMove(MotionEvent event) {
-        float distanceX = 0;
-        float distanceY = 0;
+        float cursorMoveX = event.getX();
+        float cursorMoveY = event.getY();
 
-        mCurMoveX = event.getX();
-        mCurMoveY = event.getY();
+        float percentX = ((cursorMoveX - mDownX) / mDisplaySize.x) * 100;
+        float percentY = ((cursorMoveY - mDownY) / mDisplaySize.y) * 100;
+        mWAMPSession.call("io.crossbar.move_mouse", percentX * 2, percentY * 4);
 
-        if (mLastMoveX != Float.MAX_VALUE && mLastMoveY != Float.MAX_VALUE) {
-            distanceX = mCurMoveX - mDownX;
-            distanceY = mCurMoveY - mDownY;
-        }
-
-        float distance = (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-        if (distance > 0) {
-            Point point = new Point();
-            getActivity().getWindowManager().getDefaultDisplay().getSize(point);
-            float percentX = (distanceX / point.x) * 100;
-            float percentY = (distanceY / point.y) * 100;
-            mWAMPSession.call("io.crossbar.move_mouse", percentX * 3, percentY * 6);
-            mDownX = event.getX();
-            mDownY = event.getY();
-        }
-        mLastMoveX = mCurMoveX;
-        mLastMoveY = mCurMoveY;
+        mDownX = cursorMoveX;
+        mDownY = cursorMoveY;
     }
 
     private void onSingClick(MotionEvent event, boolean down) {
         if (down) {
-            mDownTime = System.currentTimeMillis();
+            // Save the coordinates as soon as the finger touches
+            // the screen
             mDownX = event.getX();
             mDownY = event.getY();
-        } else {
-            mUpTime = System.currentTimeMillis();
-            mUpX = event.getX();
-            mUpY = event.getY();
         }
     }
 }
