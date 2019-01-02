@@ -34,8 +34,9 @@ public class MouseFragment extends Fragment {
         CrossbarConnector connector = CrossbarConnector.getInstance();
         if (connector.isConnected()) {
             mWAMPSession = connector.getSession();
+        } else {
+            connector.addOnConnectListener(session -> mWAMPSession = session);
         }
-        connector.addOnConnectListener(session -> mWAMPSession = session);
         init();
         return mBaseView;
     }

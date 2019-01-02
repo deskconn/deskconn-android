@@ -6,7 +6,7 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
-public class CrossbarFinder {
+class CrossbarFinder {
 
     private static final String TAG = CrossbarFinder.class.getName();
 
@@ -14,18 +14,18 @@ public class CrossbarFinder {
     private NsdManager.DiscoveryListener mDiscoveryListener;
     private Context mContext;
 
-    public CrossbarFinder(Context context) {
+    CrossbarFinder(Context context) {
         mContext = context;
         mNsdManager = context.getSystemService(NsdManager.class);
         initialize();
     }
 
-    public void start() {
+    void start() {
         mNsdManager.discoverServices("_crossbar._tcp", NsdManager.PROTOCOL_DNS_SD,
                 mDiscoveryListener);
     }
 
-    public void stop() {
+    void stop() {
         mNsdManager.stopServiceDiscovery(mDiscoveryListener);
     }
 

@@ -1,5 +1,6 @@
 package io.deskconn.deskconn;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,6 +16,7 @@ import io.crossbar.autobahn.wamp.Session;
 
 class CrossbarConnector {
 
+    @SuppressLint("StaticFieldLeak")
     private static CrossbarConnector sInstance;
 
     private Activity mActivity;

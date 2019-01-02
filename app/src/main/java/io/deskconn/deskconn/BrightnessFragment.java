@@ -18,8 +18,6 @@ import io.crossbar.autobahn.wamp.types.CallResult;
 
 public class BrightnessFragment extends Fragment {
 
-    private View mBaseView;
-
     private SeekBar mSeekBar;
     private TextView mStatusText;
     private Session mWAMPSession;
@@ -31,10 +29,10 @@ public class BrightnessFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        mBaseView = inflater.inflate(R.layout.fragment_brightness, container, false);
+        View view = inflater.inflate(R.layout.fragment_brightness, container, false);
         getActivity().setTitle("Brightness Control");
-        mSeekBar = mBaseView.findViewById(R.id.brightness_seekbar);
-        mStatusText = mBaseView.findViewById(R.id.status_text);
+        mSeekBar = view.findViewById(R.id.brightness_seekbar);
+        mStatusText = view.findViewById(R.id.status_text);
         mSeekBar.setOnSeekBarChangeListener(mSeekBarChangeListener);
         mSeekBar.setEnabled(false);
         mUUID = UUID.randomUUID().toString();
@@ -42,11 +40,12 @@ public class BrightnessFragment extends Fragment {
         mConnector = CrossbarConnector.getInstance();
         if (mConnector.isConnected()) {
             onServerConnectedListener(mConnector.getSession());
+        } else {
+            mConnector.addOnConnectListener(this::onServerConnectedListener);
         }
-        mConnector.addOnConnectListener(this::onServerConnectedListener);
         mConnector.addOnConnectingListener(this::onServerConnectingListener);
         mConnector.addOnDisconnectedListener(this::onServerDisconnectedListener);
-        return mBaseView;
+        return view;
     }
 
     @Override
