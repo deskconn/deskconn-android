@@ -1,9 +1,10 @@
 package io.deskconn.deskconn;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -15,6 +16,8 @@ import android.view.WindowManager;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private CrossbarConnector mConnector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +34,21 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.getMenu().getItem(0).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
+
+        mConnector = CrossbarConnector.getInstance(this);
         loadFragment(new BrightnessFragment());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mConnector.connect();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mConnector.disconnect();
     }
 
     @Override
@@ -46,35 +63,20 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main2, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.nav_brightness) {
             loadFragment(new BrightnessFragment());
-            // Handle the camera action
         } else if (id == R.id.nav_mouse) {
             loadFragment(new MouseFragment());
         }
@@ -89,5 +91,4 @@ public class MainActivity extends AppCompatActivity
         tx.replace(R.id.container, fragment);
         tx.commit();
     }
-
 }

@@ -1,5 +1,6 @@
 package io.deskconn.deskconn;
 
+import android.annotation.SuppressLint;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,7 +11,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import io.crossbar.autobahn.wamp.Client;
 import io.crossbar.autobahn.wamp.Session;
 
 public class MouseFragment extends Fragment {
@@ -36,26 +36,25 @@ public class MouseFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         mBaseView = inflater.inflate(R.layout.fragment_mouse, container, false);
         getActivity().setTitle("Mouse");
-        mWAMPSession = new Session();
-        mWAMPSession.addOnJoinListener((session, details) -> System.out.println("HELLO"));
-        Client client = new Client(mWAMPSession, "ws://192.168.100.6:5020/ws", "realm1");
-        client.connect().whenComplete((exitInfo, throwable) -> {
-        });
+        CrossbarConnector connector = CrossbarConnector.getInstance();
+        if (connector.isConnected()) {
+            mWAMPSession = connector.getSession();
+        }
+        connector.addOnConnectListener(session -> mWAMPSession = session);
         init();
         return mBaseView;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void init() {
         touchBoard = mBaseView.findViewById(R.id.touch_board);
-        touchBoard.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                onScreenTouch(event);
-                return true;
-            }
+        touchBoard.setOnTouchListener((v, event) -> {
+            onScreenTouch(event);
+            return true;
         });
     }
 
@@ -94,7 +93,7 @@ public class MouseFragment extends Fragment {
             getActivity().getWindowManager().getDefaultDisplay().getSize(point);
             float percentX = (distanceX / point.x) * 100;
             float percentY = (distanceY / point.y) * 100;
-            mWAMPSession.call("io.crossbar.move_mouse", percentX * 3, percentY * 3);
+            mWAMPSession.call("io.crossbar.move_mouse", percentX * 3, percentY * 6);
             mDownX = event.getX();
             mDownY = event.getY();
         }
