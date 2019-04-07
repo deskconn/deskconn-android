@@ -6,6 +6,8 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
+import java.util.Map;
+
 class CrossbarFinder {
 
     private static final String TAG = CrossbarFinder.class.getName();
@@ -62,9 +64,14 @@ class CrossbarFinder {
                     @Override
                     public void onServiceResolved(NsdServiceInfo info) {
                         Intent intent = new Intent("io.crossbar.found");
-                        intent.putExtra("host", info.getHost().getHostName());
+                        String serverIP = info.getHost().getHostName();
+                        intent.putExtra("host", serverIP);
                         intent.putExtra("port", info.getPort());
                         intent.putExtra("name", info.getServiceName());
+
+                        Map<String, byte[]> attrs = info.getAttributes();
+                        intent.putExtra("realm", getAttr(attrs, "realm", "deskconn"));
+                        intent.putExtra("hostname", getAttr(attrs, "hostname", serverIP));
                         mContext.sendBroadcast(intent);
                     }
                 });
@@ -76,5 +83,9 @@ class CrossbarFinder {
                 mContext.sendBroadcast(intent);
             }
         };
+    }
+
+    private String getAttr(Map<String, byte[]> attrs, String key, String defValue) {
+        return new String(attrs.getOrDefault(key, defValue.getBytes()));
     }
 }

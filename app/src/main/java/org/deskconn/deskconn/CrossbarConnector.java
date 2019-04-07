@@ -97,8 +97,9 @@ class CrossbarConnector {
             Bundle extras = intent.getExtras();
             if (extras != null && action.equals("io.crossbar.found")) {
                 System.out.println("Found: " + extras.getString("host"));
-                System.out.println("Found: " + extras.getInt("port"));
-                connectToServer(extras.getString("host"), extras.getInt("port"), "deskconn");
+                System.out.println("Deskconn host is: " + extras.getString("hostname"));
+                connectToServer(extras.getString("host"), extras.getInt("port"),
+                        extras.getString("realm"));
             } else if (action.equals("io.crossbar.lost")) {
                 System.out.println("Lost...");
             }
