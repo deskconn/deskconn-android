@@ -21,7 +21,7 @@ class CrossbarFinder {
     }
 
     void start() {
-        mNsdManager.discoverServices("_crossbar._tcp", NsdManager.PROTOCOL_DNS_SD,
+        mNsdManager.discoverServices("_deskconn._tcp", NsdManager.PROTOCOL_DNS_SD,
                 mDiscoveryListener);
     }
 
