@@ -1,4 +1,4 @@
-package io.deskconn.deskconn;
+package org.deskconn.deskconn;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -64,12 +64,12 @@ public class BrightnessFragment extends Fragment {
         mWAMPSession = session;
         mStatusText.setText("Connected");
         CompletableFuture<Integer> currentBrightness = session.call(
-                "io.crossbar.get_brightness", int.class);
+                "org.deskconn.brightness.get", int.class);
         currentBrightness.thenAccept(brightness -> {
             mSeekBar.setProgress(brightness, false);
             mSeekBar.setEnabled(true);
         });
-        session.subscribe("io.crossbar.brightness_changed", (args, kwargs, eDetails) -> {
+        session.subscribe("org.deskconn.brightness.on_changed", (args, kwargs, eDetails) -> {
             String publisher = (String) kwargs.get("publisher_id");
             if (publisher == null || !publisher.equals(mUUID)) {
                 mSeekBar.setProgress((Integer) kwargs.get("percentage"));
@@ -92,7 +92,7 @@ public class BrightnessFragment extends Fragment {
             }
 
             CompletableFuture<CallResult> call = mWAMPSession.call(
-                    "io.crossbar.set_brightness", progress, mUUID);
+                    "org.deskconn.brightness.set", progress, mUUID);
             call.whenComplete((callResult, throwable) -> {
                 if (throwable != null) {
                     throwable.printStackTrace();

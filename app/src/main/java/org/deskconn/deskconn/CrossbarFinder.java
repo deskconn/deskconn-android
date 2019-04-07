@@ -1,4 +1,4 @@
-package io.deskconn.deskconn;
+package org.deskconn.deskconn;
 
 import android.content.Context;
 import android.content.Intent;
@@ -33,12 +33,12 @@ class CrossbarFinder {
         mDiscoveryListener = new NsdManager.DiscoveryListener() {
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-
+                Log.d(TAG, "Service discovery start failed");
             }
 
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-
+                Log.d(TAG, "Service discovery stop failed");
             }
 
             @Override
@@ -48,7 +48,7 @@ class CrossbarFinder {
 
             @Override
             public void onDiscoveryStopped(String serviceType) {
-
+                Log.d(TAG, "Service discovery stopped");
             }
 
             @Override
@@ -56,7 +56,7 @@ class CrossbarFinder {
                 mNsdManager.resolveService(serviceInfo, new NsdManager.ResolveListener() {
                     @Override
                     public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-
+                        System.out.println("Resolve failed...");
                     }
 
                     @Override

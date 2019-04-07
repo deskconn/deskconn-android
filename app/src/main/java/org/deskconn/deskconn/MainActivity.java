@@ -1,4 +1,4 @@
-package io.deskconn.deskconn;
+package org.deskconn.deskconn;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;

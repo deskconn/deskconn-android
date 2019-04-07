@@ -1,4 +1,4 @@
-package io.deskconn.deskconn;
+package org.deskconn.deskconn;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -97,7 +97,8 @@ class CrossbarConnector {
             Bundle extras = intent.getExtras();
             if (extras != null && action.equals("io.crossbar.found")) {
                 System.out.println("Found: " + extras.getString("host"));
-                connectToServer(extras.getString("host"), extras.getInt("port"), "realm1");
+                System.out.println("Found: " + extras.getInt("port"));
+                connectToServer(extras.getString("host"), extras.getInt("port"), "deskconn");
             } else if (action.equals("io.crossbar.lost")) {
                 System.out.println("Lost...");
             }
