@@ -1,6 +1,5 @@
-package org.deskconn.deskconn;
+package org.deskconn.deskconn.fragments;
 
-import android.annotation.SuppressLint;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,40 +10,49 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.deskconn.deskconn.network.DeskConnConnector;
+import org.deskconn.deskconn.R;
+
 import io.crossbar.autobahn.wamp.Session;
 
 public class MouseFragment extends Fragment {
-
-    private View mBaseView;
-
-    private float mDownX;
+        private float mDownX;
     private float mDownY;
 
     private Session mWAMPSession;
     private Point mDisplaySize;
+    private View mTouchBoard;
+    private DeskConnConnector mConnector;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        mBaseView = inflater.inflate(R.layout.fragment_mouse, container, false);
+        View baseView = inflater.inflate(R.layout.fragment_mouse, container, false);
+        mTouchBoard = baseView.findViewById(R.id.touch_board);
         getActivity().setTitle("Mouse Control");
         mDisplaySize = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(mDisplaySize);
-        CrossbarConnector connector = CrossbarConnector.getInstance();
-        if (connector.isConnected()) {
-            mWAMPSession = connector.getSession();
-        } else {
-            connector.addOnConnectListener(session -> mWAMPSession = session);
-        }
-        init();
-        return mBaseView;
+        mConnector = DeskConnConnector.getInstance(getActivity());
+        mConnector.addOnConnectListener(this::OnConnect);
+        mConnector.addOnDisconnectListener(this::onDisconnect);
+        return baseView;
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private void init() {
-        View touchBoard = mBaseView.findViewById(R.id.touch_board);
-        touchBoard.setOnTouchListener((v, event) -> onScreenTouch(event));
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mConnector.removeOnConnectListener(this::OnConnect);
+        mConnector.removeOnDisconnectListener(this::onDisconnect);
+    }
+
+    private void OnConnect(Session session) {
+        mWAMPSession = session;
+        mTouchBoard.setOnTouchListener((v, event) -> onScreenTouch(event));
+    }
+
+    private void onDisconnect() {
+        mTouchBoard.setOnTouchListener((v, event) -> false);
     }
 
     private boolean onScreenTouch(MotionEvent event) {
@@ -60,6 +68,7 @@ public class MouseFragment extends Fragment {
     }
 
     private void onMove(MotionEvent event) {
+        System.out.println("Moving...");
         float cursorMoveX = event.getX();
         float cursorMoveY = event.getY();
 

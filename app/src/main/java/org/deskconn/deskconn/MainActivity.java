@@ -13,10 +13,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
+import org.deskconn.deskconn.fragments.BrightnessFragment;
+import org.deskconn.deskconn.fragments.MouseFragment;
+import org.deskconn.deskconn.network.DeskConnConnector;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private CrossbarConnector mConnector;
+    private DeskConnConnector mConnector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +38,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.getMenu().getItem(0).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mConnector = CrossbarConnector.getInstance(this);
+        mConnector = DeskConnConnector.getInstance(this);
         loadFragment(new BrightnessFragment());
     }
 

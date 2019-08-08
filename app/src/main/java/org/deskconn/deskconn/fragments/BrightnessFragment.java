@@ -1,4 +1,4 @@
-package org.deskconn.deskconn;
+package org.deskconn.deskconn.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import org.deskconn.deskconn.network.DeskConnConnector;
+import org.deskconn.deskconn.R;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -23,7 +26,7 @@ public class BrightnessFragment extends Fragment {
     private Session mWAMPSession;
     private String mUUID;
 
-    private CrossbarConnector mConnector;
+    private DeskConnConnector mConnector;
 
     @Nullable
     @Override
@@ -37,30 +40,21 @@ public class BrightnessFragment extends Fragment {
         mSeekBar.setEnabled(false);
         mUUID = UUID.randomUUID().toString();
 
-        mConnector = CrossbarConnector.getInstance();
-        if (mConnector.isConnected()) {
-            onServerConnectedListener(mConnector.getSession());
-        } else {
-            mConnector.addOnConnectListener(this::onServerConnectedListener);
-        }
-        mConnector.addOnConnectingListener(this::onServerConnectingListener);
-        mConnector.addOnDisconnectedListener(this::onServerDisconnectedListener);
+        mStatusText.setText("Connecting...");
+        mConnector = DeskConnConnector.getInstance(getActivity());
+        mConnector.addOnConnectListener(this::onConnect);
+        mConnector.addOnDisconnectListener(this::onDisconnect);
         return view;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mConnector.removeOnConnectListener(this::onServerConnectedListener);
-        mConnector.removeOnConnectingListener(this::onServerConnectingListener);
-        mConnector.removeOnDisconnectedListener(this::onServerDisconnectedListener);
+        mConnector.removeOnConnectListener(this::onConnect);
+        mConnector.removeOnDisconnectListener(this::onDisconnect);
     }
 
-    private void onServerConnectingListener() {
-        mStatusText.setText("Connecting...");
-    }
-
-    private void onServerConnectedListener(Session session) {
+    private void onConnect(Session session) {
         mWAMPSession = session;
         mStatusText.setText("Connected");
         CompletableFuture<Integer> currentBrightness = session.call(
@@ -77,7 +71,7 @@ public class BrightnessFragment extends Fragment {
         });
     }
 
-    private void onServerDisconnectedListener() {
+    private void onDisconnect() {
         mWAMPSession = null;
         mStatusText.setText("Disconnected");
         mSeekBar.setEnabled(false);
