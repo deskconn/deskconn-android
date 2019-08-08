@@ -74,7 +74,13 @@ public class MouseFragment extends Fragment {
 
         float percentX = ((cursorMoveX - mDownX) / mDisplaySize.x) * 100;
         float percentY = ((cursorMoveY - mDownY) / mDisplaySize.y) * 100;
-        mWAMPSession.call("org.deskconn.mouse.move", percentX * 2, percentY * 4);
+        mWAMPSession.call("org.deskconn.mouse.move", percentX * 2, percentY * 4).whenComplete((callResult, throwable) -> {
+            if (throwable != null) {
+                throwable.printStackTrace();
+            } else {
+                System.out.println(callResult.results);
+            }
+        });
 
         mDownX = cursorMoveX;
         mDownY = cursorMoveY;

@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.nsd.NsdManager;
 
+import org.deskconn.deskconn.Helpers;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -11,6 +13,7 @@ import java.util.function.Consumer;
 
 import io.crossbar.autobahn.wamp.Client;
 import io.crossbar.autobahn.wamp.Session;
+import io.crossbar.autobahn.wamp.auth.CryptosignAuth;
 
 public class DeskConnConnector {
 
@@ -58,12 +61,12 @@ public class DeskConnConnector {
         mOnDisconnectListeners.remove(method);
     }
 
-    public void connect() {
+    public synchronized void connect() {
         DeskConnFinder.start(mContext.getSystemService(NsdManager.class), this::connectToServer,
                 () -> {});
     }
 
-    public void disconnect() {
+    public synchronized void disconnect() {
         DeskConnFinder.stop();
         if (isConnected()) {
             mWAMPSession.leave();
@@ -78,11 +81,23 @@ public class DeskConnConnector {
     private void connectToServer(DiscoveredService service) {
         mWAMPSession = new Session();
         mWAMPSession.addOnJoinListener((session, details) -> {
+            System.out.println(details.authrole);
             mOnConnectListeners.forEach(sessionConsumer -> sessionConsumer.accept(session));
+        });
+        mWAMPSession.addOnLeaveListener((session, details) -> {
+            System.out.println(details.reason);
         });
         String crossbarURL = String.format(Locale.US, "ws://%s:%d/ws", service.getHost(),
                 service.getPort());
-        Client wampClient = new Client(mWAMPSession, crossbarURL, service.getRealm());
+        Client wampClient;
+        Helpers helpers = new Helpers(mContext);
+        if (helpers.isFirstRun()) {
+            wampClient = new Client(mWAMPSession, crossbarURL, service.getRealm());
+        } else {
+            CryptosignAuth auth = new CryptosignAuth(
+                    helpers.getPublicKey(), helpers.getPrivateKey(), helpers.getPublicKey());
+            wampClient = new Client(mWAMPSession, crossbarURL, service.getRealm(), auth);
+        }
         wampClient.connect().whenComplete((exitInfo, throwable) -> {
             mOnDisconnectListeners.forEach(Runnable::run);
         });

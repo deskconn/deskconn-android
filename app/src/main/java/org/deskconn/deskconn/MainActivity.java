@@ -1,5 +1,6 @@
 package org.deskconn.deskconn;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -25,6 +26,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Helpers helpers = new Helpers(getApplicationContext());
+        if (helpers.isFirstRun()) {
+            startActivity(new Intent(getApplicationContext(), PairActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_main2);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -39,6 +46,15 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         mConnector = DeskConnConnector.getInstance(this);
+        mConnector.addOnConnectListener(session -> {
+            session.call("org.dekconn.gpio.set_out_low", 21).whenComplete((callResult, throwable) -> {
+                if (throwable != null) {
+                    throwable.printStackTrace();
+                } else {
+                    System.out.println(callResult.results);
+                }
+            });
+        });
         loadFragment(new BrightnessFragment());
     }
 
