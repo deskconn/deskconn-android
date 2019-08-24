@@ -1,15 +1,23 @@
 package org.deskconn.deskconn.network;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.net.nsd.NsdManager;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 
 import org.deskconn.deskconn.Helpers;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceInfo;
 
 import io.crossbar.autobahn.wamp.Client;
 import io.crossbar.autobahn.wamp.Session;
@@ -17,14 +25,14 @@ import io.crossbar.autobahn.wamp.auth.CryptosignAuth;
 
 public class DeskConnConnector {
 
-    @SuppressLint("StaticFieldLeak")
-    private static volatile DeskConnConnector sInstance;
-
-    private Context mContext;
-    private Session mWAMPSession;
+    private static volatile DeskConnConnector sInstance = null;
 
     private final List<Consumer<Session>> mOnConnectListeners;
     private final List<Runnable> mOnDisconnectListeners;
+
+    private Context mContext;
+    private Session mWAMPSession;
+    private JmDNS mJmDNS;
 
     public synchronized static DeskConnConnector getInstance(Context context) {
         if (sInstance == null) {
@@ -62,12 +70,27 @@ public class DeskConnConnector {
     }
 
     public synchronized void connect() {
-        DeskConnFinder.start(mContext.getSystemService(NsdManager.class), this::connectToServer,
-                () -> {});
+        new Thread(() -> {
+            try {
+                mJmDNS = JmDNS.create(getWifiIP());
+                mJmDNS.addServiceListener("_deskconn._tcp.local.", new ServiceListener());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private InetAddress getWifiIP() throws UnknownHostException {
+        WifiManager wifiMgr = mContext.getSystemService(WifiManager.class);
+        WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+        byte[] ipBytes = BigInteger.valueOf(wifiInfo.getIpAddress()).toByteArray();
+        return InetAddress.getByAddress(ipBytes);
     }
 
     public synchronized void disconnect() {
-        DeskConnFinder.stop();
+        if (mJmDNS != null) {
+            mJmDNS.unregisterAllServices();
+        }
         if (isConnected()) {
             mWAMPSession.leave();
         }
@@ -85,6 +108,7 @@ public class DeskConnConnector {
             mOnConnectListeners.forEach(sessionConsumer -> sessionConsumer.accept(session));
         });
         mWAMPSession.addOnLeaveListener((session, details) -> {
+            System.out.println("Left...");
             System.out.println(details.reason);
         });
         String crossbarURL = String.format(Locale.US, "ws://%s:%d/ws", service.getHost(),
@@ -101,5 +125,26 @@ public class DeskConnConnector {
         wampClient.connect().whenComplete((exitInfo, throwable) -> {
             mOnDisconnectListeners.forEach(Runnable::run);
         });
+    }
+
+    private class ServiceListener implements javax.jmdns.ServiceListener {
+        @Override
+        public void serviceAdded(ServiceEvent event) {
+            System.out.println("Service added...");
+        }
+
+        @Override
+        public void serviceRemoved(ServiceEvent event) {
+            System.out.println("Service removed: " + event.getInfo());
+        }
+
+        @Override
+        public void serviceResolved(ServiceEvent event) {
+            ServiceInfo info = event.getInfo();
+            String host = info.getInet4Addresses()[0].getHostAddress();
+            DiscoveredService service = new DiscoveredService(host, info.getPort(), event.getName(),
+                    info.getPropertyString("realm"));
+            connectToServer(service);
+        }
     }
 }

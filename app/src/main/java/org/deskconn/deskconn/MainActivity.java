@@ -4,6 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.google.android.material.navigation.NavigationView;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.core.view.GravityCompat;
@@ -11,12 +15,16 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.view.MenuItem;
 import android.view.WindowManager;
 
 import org.deskconn.deskconn.fragments.BrightnessFragment;
 import org.deskconn.deskconn.fragments.MouseFragment;
 import org.deskconn.deskconn.network.DeskConnConnector;
+import org.libsodium.jni.keys.SigningKey;
+
+import io.crossbar.autobahn.wamp.Session;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -26,12 +34,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Helpers helpers = new Helpers(getApplicationContext());
-        if (helpers.isFirstRun()) {
-            startActivity(new Intent(getApplicationContext(), PairActivity.class));
-            finish();
-            return;
-        }
         setContentView(R.layout.activity_main2);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -46,16 +48,43 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         mConnector = DeskConnConnector.getInstance(this);
-        mConnector.addOnConnectListener(session -> {
-            session.call("org.dekconn.gpio.set_out_low", 21).whenComplete((callResult, throwable) -> {
-                if (throwable != null) {
-                    throwable.printStackTrace();
-                } else {
-                    System.out.println(callResult.results);
-                }
+        Helpers helpers = new Helpers(getApplicationContext());
+        if (helpers.isFirstRun()) {
+            new IntentIntegrator(this).initiateScan();
+        } else {
+            loadFragment(new BrightnessFragment());
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            mConnector.addOnConnectListener(session -> {
+                System.out.println(result.getContents());
+                sendPairRequest(session, result.getContents().trim());
             });
+        } else {
+            // Failure...
+        }
+    }
+
+    private void sendPairRequest(Session session, String otp) {
+        SigningKey key = new SigningKey();
+        String pubKey = key.getVerifyKey().toString();
+        String privKey = key.toString();
+        session.call("org.deskconn.pairing.pair", otp, pubKey).whenComplete((callResult, throwable) -> {
+            if (throwable == null) {
+                Helpers helpers = new Helpers(getBaseContext());
+                helpers.savePublicKey(pubKey);
+                helpers.saveSecretKey(privKey);
+                helpers.setFirstRun(false);
+                mConnector.disconnect();
+                loadFragment(new BrightnessFragment());
+            } else {
+                throwable.printStackTrace();
+            }
         });
-        loadFragment(new BrightnessFragment());
     }
 
     @Override
