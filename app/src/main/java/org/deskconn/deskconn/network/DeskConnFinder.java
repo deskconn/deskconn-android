@@ -2,7 +2,7 @@ package org.deskconn.deskconn.network;
 
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import java.util.Map;
