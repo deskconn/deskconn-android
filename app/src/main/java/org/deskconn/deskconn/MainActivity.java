@@ -22,9 +22,6 @@ import com.google.zxing.integration.android.IntentResult;
 import org.deskconn.deskconn.fragments.BrightnessFragment;
 import org.deskconn.deskconn.fragments.MouseFragment;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -34,30 +31,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mDeskConn = ((AppGlobals) getApplication()).getDeskConn();
+        if (!mDeskConn.isPaired()) {
+            startActivity(new Intent(getApplicationContext(), PairActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_main2);
         initUI();
-
-        mDeskConn = ((AppGlobals) getApplication()).getDeskConn();
-        if (mDeskConn.isPaired()) {
-            loadFragment(new BrightnessFragment());
-        } else {
-            discover();
-        }
-    }
-
-    private void discover() {
-        CompletableFuture<Map<String, DeskConn.Service>> future = mDeskConn.find(1000);
-        future.thenAccept(services -> {
-            // FIXME: We have the service, show them in a list.
-            for (String key : services.keySet()) {
-                mDeskConn.connect(services.get(key));
-                new IntentIntegrator(this).initiateScan();
-                break;
-            }
-        });
-        future.exceptionally(throwable -> {
-            return null;
-        });
     }
 
     private void initUI() {
@@ -73,6 +54,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.getMenu().getItem(0).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
+        loadFragment(new BrightnessFragment());
     }
 
     @Override

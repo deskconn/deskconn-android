@@ -3,16 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/edit_text_pair_code"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="Enter code here"/>
 
-    <Button
-        android:id="@+id/button_pair"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pair"/>
 
 </androidx.appcompat.widget.LinearLayoutCompat>

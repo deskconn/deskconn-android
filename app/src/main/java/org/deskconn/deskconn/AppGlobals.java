@@ -51,6 +51,7 @@ public class AppGlobals extends Application implements Application.ActivityLifec
         if (mRunningCount == 0) {
             mDeskConn.disconnect();
         }
+        System.out.println("Activity stopped... " + mRunningCount);
     }
 
     @Override
