@@ -1,4 +1,4 @@
-package org.deskconn.deskconn;
+package org.deskconn.deskconn.utils;
 
 
 import android.content.Context;

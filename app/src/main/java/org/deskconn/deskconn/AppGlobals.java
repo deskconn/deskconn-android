@@ -7,6 +7,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.deskconn.deskconn.utils.DeskConn;
+
 public class AppGlobals extends Application implements Application.ActivityLifecycleCallbacks {
 
     private DeskConn mDeskConn;

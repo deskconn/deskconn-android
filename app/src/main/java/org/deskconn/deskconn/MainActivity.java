@@ -21,6 +21,7 @@ import com.google.zxing.integration.android.IntentResult;
 
 import org.deskconn.deskconn.fragments.BrightnessFragment;
 import org.deskconn.deskconn.fragments.MouseFragment;
+import org.deskconn.deskconn.utils.DeskConn;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {

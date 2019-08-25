@@ -12,8 +12,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import org.deskconn.deskconn.AppGlobals;
-import org.deskconn.deskconn.DeskConn;
 import org.deskconn.deskconn.R;
+import org.deskconn.deskconn.utils.DeskConn;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
