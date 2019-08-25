@@ -2,15 +2,17 @@ package org.deskconn.deskconn.fragments;
 
 import android.graphics.Point;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.deskconn.deskconn.network.DeskConnConnector;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import org.deskconn.deskconn.AppGlobals;
+import org.deskconn.deskconn.DeskConn;
 import org.deskconn.deskconn.R;
 
 import io.crossbar.autobahn.wamp.Session;
@@ -22,7 +24,7 @@ public class MouseFragment extends Fragment {
     private Session mWAMPSession;
     private Point mDisplaySize;
     private View mTouchBoard;
-    private DeskConnConnector mConnector;
+    private DeskConn mConnector;
 
     @Nullable
     @Override
@@ -33,7 +35,7 @@ public class MouseFragment extends Fragment {
         getActivity().setTitle("Mouse Control");
         mDisplaySize = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(mDisplaySize);
-        mConnector = DeskConnConnector.getInstance(getActivity());
+        mConnector = ((AppGlobals) getActivity().getApplication()).getDeskConn();
         mConnector.addOnConnectListener(this::OnConnect);
         mConnector.addOnDisconnectListener(this::onDisconnect);
         return baseView;

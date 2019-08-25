@@ -4,12 +4,13 @@ package org.deskconn.deskconn;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+
+import androidx.preference.PreferenceManager;
 
 
 public class Helpers extends ContextWrapper {
 
-    private static final String KEY_FIRST_RUN = "key_first_run";
+    private static final String KEY_PAIRED = "key_paired";
     private static final String KEY_PUBLIC = "key_public";
     private static final String KEY_SECRET = "key_secret";
 
@@ -20,12 +21,12 @@ public class Helpers extends ContextWrapper {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
-    public boolean isFirstRun() {
-        return mPrefs.getBoolean(KEY_FIRST_RUN, true);
+    public boolean isPaired() {
+        return mPrefs.getBoolean(KEY_PAIRED, false);
     }
 
-    public void setFirstRun(boolean isFirstRun) {
-        mPrefs.edit().putBoolean(KEY_FIRST_RUN, isFirstRun).apply();
+    public void setPaired(boolean isFirstRun) {
+        mPrefs.edit().putBoolean(KEY_PAIRED, isFirstRun).apply();
     }
 
     public String getPublicKey() {

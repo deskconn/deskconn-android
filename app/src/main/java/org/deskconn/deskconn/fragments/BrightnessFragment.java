@@ -1,16 +1,18 @@
 package org.deskconn.deskconn.fragments;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import org.deskconn.deskconn.network.DeskConnConnector;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import org.deskconn.deskconn.AppGlobals;
+import org.deskconn.deskconn.DeskConn;
 import org.deskconn.deskconn.R;
 
 import java.util.UUID;
@@ -26,7 +28,7 @@ public class BrightnessFragment extends Fragment {
     private Session mWAMPSession;
     private String mUUID;
 
-    private DeskConnConnector mConnector;
+    private DeskConn mConnector;
 
     @Nullable
     @Override
@@ -41,7 +43,7 @@ public class BrightnessFragment extends Fragment {
         mUUID = UUID.randomUUID().toString();
 
         mStatusText.setText("Connecting...");
-        mConnector = DeskConnConnector.getInstance(getActivity());
+        mConnector = ((AppGlobals) getActivity().getApplication()).getDeskConn();
         mConnector.addOnConnectListener(this::onConnect);
         mConnector.addOnDisconnectListener(this::onDisconnect);
         return view;
