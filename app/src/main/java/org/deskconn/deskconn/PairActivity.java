@@ -11,41 +11,50 @@ import org.deskconn.deskconn.utils.DeskConn;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class PairActivity extends AppCompatActivity {
 
     private DeskConn mDeskConn;
-    private RecyclerView recyclerView;
+    private List<DeskConn.Service> mServices;
+    private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager layoutManager;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.peers_recyler);
-        recyclerView = findViewById(R.id.peers_recycler_view);
-        recyclerView.setHasFixedSize(true);
-        layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
+        mRecyclerView = findViewById(R.id.peers_recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
         mDeskConn = ((AppGlobals) getApplication()).getDeskConn();
+        mServices = new ArrayList<>();
         discover();
     }
 
     private void discover() {
-        CompletableFuture<Map<String, DeskConn.Service>> future = mDeskConn.find(1000);
-        future.thenAccept(servicesMap -> {
-            List<DeskConn.Service> services = new ArrayList<>();
-            for (String key : servicesMap.keySet()) {
-                services.add(servicesMap.get(key));
-            }
-            mAdapter = new MyAdapter(services);
-            recyclerView.setAdapter(mAdapter);
+        mDeskConn.addOnServiceFoundListener(this::onServiceFound);
+        mDeskConn.addOnServiceLostListener(this::onServiceLost);
+        CompletableFuture<Boolean> future = mDeskConn.startDiscovery();
+        future.thenAccept(started -> {
+            mAdapter = new MyAdapter(mServices);
+            mRecyclerView.setAdapter(mAdapter);
         });
         future.exceptionally(throwable -> {
             throwable.printStackTrace();
             return null;
         });
+    }
+
+    private void onServiceFound(DeskConn.Service service) {
+        mServices.add(service);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private void onServiceLost(DeskConn.Service service) {
+        mServices.remove(service);
+        mAdapter.notifyDataSetChanged();
     }
 }

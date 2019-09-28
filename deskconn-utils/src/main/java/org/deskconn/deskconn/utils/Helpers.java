@@ -8,7 +8,7 @@ import android.content.SharedPreferences;
 import androidx.preference.PreferenceManager;
 
 
-public class Helpers extends ContextWrapper {
+class Helpers extends ContextWrapper {
 
     private static final String KEY_PAIRED = "key_paired";
     private static final String KEY_PUBLIC = "key_public";
@@ -29,19 +29,32 @@ public class Helpers extends ContextWrapper {
         mPrefs.edit().putBoolean(KEY_PAIRED, isFirstRun).apply();
     }
 
-    public String getPublicKey() {
-        return mPrefs.getString(KEY_PUBLIC, null);
+    public void saveKeys(String publicKey, String privateKey) {
+        SharedPreferences.Editor editor = mPrefs.edit();
+        editor.putString(KEY_PUBLIC, publicKey);
+        editor.putString(KEY_SECRET, privateKey);
+        editor.apply();
     }
 
-    public void savePublicKey(String key) {
-        mPrefs.edit().putString(KEY_PUBLIC, key).apply();
+    public KeyPair getKeyPair() {
+        return new KeyPair(mPrefs.getString(KEY_PUBLIC, null), mPrefs.getString(KEY_SECRET, null));
     }
 
-    public String getPrivateKey() {
-        return mPrefs.getString(KEY_SECRET, null);
-    }
+    static class KeyPair {
+        private final String mPublicKey;
+        private final String mPrivateKey;
 
-    public void saveSecretKey(String key) {
-        mPrefs.edit().putString(KEY_SECRET, key).apply();
+        KeyPair(String publicKey, String privateKey) {
+            mPublicKey = publicKey;
+            mPrivateKey = privateKey;
+        }
+
+        String getPublicKey() {
+            return mPublicKey;
+        }
+
+        String getPrivateKey() {
+            return mPrivateKey;
+        }
     }
 }

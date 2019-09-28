@@ -17,7 +17,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
     List<DeskConn.Service> mServices;
 
-    public MyAdapter(List<DeskConn.Service> services) {
+    MyAdapter(List<DeskConn.Service> services) {
         mServices = services;
     }
 
@@ -31,7 +31,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        holder.textView.setText(mServices.get(position).hostName);
+        holder.textView.setText(mServices.get(position).getHostName());
     }
 
     @Override
@@ -39,11 +39,10 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         return mServices.size();
     }
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
-        public TextView textView;
+    static class MyViewHolder extends RecyclerView.ViewHolder {
+        TextView textView;
 
-        public MyViewHolder(View v) {
+        MyViewHolder(View v) {
             super(v);
             textView = v.findViewById(R.id.name);
         }

@@ -19,8 +19,6 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import org.deskconn.deskconn.fragments.BrightnessFragment;
-import org.deskconn.deskconn.fragments.MouseFragment;
 import org.deskconn.deskconn.utils.DeskConn;
 
 public class MainActivity extends AppCompatActivity
@@ -55,7 +53,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.getMenu().getItem(0).setChecked(true);
         navigationView.setNavigationItemSelectedListener(this);
-        loadFragment(new BrightnessFragment());
+//        loadFragment(new BrightnessFragment());
     }
 
     @Override
@@ -89,11 +87,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.nav_brightness) {
-            loadFragment(new BrightnessFragment());
-        } else if (id == R.id.nav_mouse) {
-            loadFragment(new MouseFragment());
-        }
+//        if (id == R.id.nav_brightness) {
+//            loadFragment(new BrightnessFragment());
+//        } else if (id == R.id.nav_mouse) {
+//            loadFragment(new MouseFragment());
+//        }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
